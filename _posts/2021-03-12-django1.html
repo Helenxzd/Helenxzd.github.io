@@ -1,0 +1,105 @@
+---
+layout: post
+title: "Django Learning Note - 1"
+subtitle: ""
+date: 2021-03-12 18:31:00 
+background: '/img/posts/06.jpg'
+---
+
+<p>I&#39;m currenltly learn how to build a web application in Django. I am enrolled in an online course and it teaches building web application with Django on pythonanywhere.</p>
+<hr>
+<ul>
+<li><h3 id="create-an-project">Create an project</h3>
+</li>
+</ul>
+<blockquote>
+<p>django-admin startproject mysite</p>
+</blockquote>
+<h5 id="what-startproject-will-create-">what startproject will create:</h5>
+<pre><code>mysite/
+    manage<span class="hljs-selector-class">.py</span>
+    mysite/
+        __init__<span class="hljs-selector-class">.py</span>
+        settings<span class="hljs-selector-class">.py</span>
+        urls<span class="hljs-selector-class">.py</span>
+        asgi<span class="hljs-selector-class">.py</span>
+        wsgi.py
+</code></pre><ul>
+<li>outer mysite dir: a container of your project, name can be changed. </li>
+<li>manage.py: a command-line utility that lets you interact with Django project </br>
+e.g python manage.py check</li>
+<li>inner mysite dir: actual python package for the project</li>
+<li>mysite/settings.py: Settings/configuration for the Django project</li>
+<li>mysite/url.py: URL declaration for this Django project </br>
+the file Django consult first when it receives an incoming HTTP Request</li>
+</ul>
+<p><img class="img-fluid" src="/img/blogimg/request.png" alt="avatar"></p>
+<ul>
+<li><h3 id="create-an-app">Create an app</h3>
+</li>
+</ul>
+<p>difference between project &amp; app : An app is a web application that does something, a project is a collection of configuration and apps for a particular website. A project can contain multiple apps. An app can be in multiple projects </br></br></p>
+<blockquote>
+<p>python manage.py startapp polls</p>
+</blockquote>
+<h5 id="what-startapp-will-create-">what startapp will create:</h5>
+<pre><code>polls/
+    __init__<span class="hljs-selector-class">.py</span>
+    admin<span class="hljs-selector-class">.py</span>
+    apps<span class="hljs-selector-class">.py</span>
+    migrations/
+        __init__<span class="hljs-selector-class">.py</span>
+    models<span class="hljs-selector-class">.py</span>
+    tests<span class="hljs-selector-class">.py</span>
+    views.py
+</code></pre><ul>
+<li><h2 id="database-setup">Database setup</h2>
+</li>
+</ul>
+<blockquote>
+<p>python manage.py migrate </p>
+<p>look at INSTALLED_APPS setting and creates any necessary database table according to mysite/settings.py</p>
+</blockquote>
+<ul>
+<li><h3 id="creating-models">Creating models</h3>
+</li>
+</ul>
+<h5 id="edit-polls-models-py">edit polls/models.py</h5>
+<p><img class="img-fluid" src="/img/blogimg/ORM.png" alt="avatar"></p>
+<ul>
+<li><h3 id="activating-models">Activating models</h3>
+</li>
+</ul>
+<p>tell mysite/settings.py to include the app in project by adding a reference to its configuration class in the INSTALLED_APPS setting.</p>
+<pre><code>INSTALLED_APPS = [
+    <span class="hljs-string">'polls.apps.PollsConfig'</span>,
+    ...
+]
+</code></pre><blockquote>
+<p>python manage.py makemigrations polls</p>
+</blockquote>
+<p>makemigrations tell Django you&#39;ve made some changes to the model and you&#39;d like the change to be stored as a migration. It will store in polls/migration/</p>
+<blockquote>
+<p>python manage.py sqlmigrate polls 0001</p>
+</blockquote>
+<p>this command let you see the SQL that gonna run when you migrate. It doesn&#39;t actually run.</p>
+<blockquote>
+<p>python manage.py migrate</p>
+</blockquote>
+<p>this is the command that run the SQL and create/update database</p>
+<ul>
+<li><h3 id="create-an-admin-user">Create an admin user</h3>
+</li>
+</ul>
+<blockquote>
+<p>python manage.py createsuperuser</p>
+</blockquote>
+<p>I&#39;m running Django at Pythonanywhere so there is no need to run</p>
+<blockquote>
+<p>python manage.py runserver</p>
+</blockquote>
+<p>Go to the deployed site /admin you can see an authentication framework shipped by Django. You can register the app Polls in admin site by writing the registration in polls/admin.py</p>
+<blockquote>
+<p>from .models import Question <br/>
+admin.site.register(Question)</p>
+</blockquote>
