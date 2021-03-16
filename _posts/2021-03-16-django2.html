@@ -1,0 +1,107 @@
+---
+layout: post
+title: "Django Learning Note - 2"
+subtitle: ""
+date: 2021-03-16 18:31:00 
+background: '/img/posts/06.jpg'
+---
+
+<p>This post will focus on the view part of a django application. My learning path is following the <a href="https://docs.djangoproject.com/en/3.0/ref/templates/builtins/">django documentation</a>. Views are cores of Django application.</p>
+
+<p>In Django, web pages and contents are delivered by views. Each view is presented by python function/method.</p>
+
+<ul>
+<li><h4>Writing more views</h4>
+<p>
+Let's write more views in polls/views.py. These views are presented as a python method, e.g
+</p>
+<pre style="color: #8099c4">
+def detail(request, question_id):
+	return HttpResponse("You're looking at question %s." % question_id)
+</pre>
+
+<p>
+We need to wire the detail pafe into polls.url module. question_id end up as an additional parameter to the detail() view.
+</p>
+<pre style="color: #8099c4">
+urlpatterns = [
+...
+path('<int:question_id>/', views.detail, name='detail'),
+...
+]
+</pre>
+<p>
+In that case, we can get access to the detail page by url like /polls/3/
+</p>
+</li>
+
+<li><h4>Views can contact models and do some meanful work</h4>
+<pre style="color: #8099c4">
+from .models import Question
+
+def index(request):
+    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+    output = ', '.join([q.question_text for q in latest_question_list])
+    return HttpResponse(output)
+</pre>
+<p>
+Use Django database API to easily access to the database.
+</p>
+</li>
+
+<li><h4>Use template to prevent hard code everything (Don't Repeat Yourself (DRY) principle)</h4>
+<p>
+When creating a template, create it inside a folder called template inside the application folder. Then create another folder with the same name as the application name in this 'template' folder. To access a template, one can use 'polls/index.html' in the views.py. The actual path of this template is polls/template/polls/index.html. Django will automatically look for templates in the template folder. 
+</p>
+
+<pre>
+Load a template:
+Template = loader.get_template('polls/index.html')
+</pre>
+
+<pre style="color: #8099c4">
+#To render it, context stores the variables key-value pairs you pass in to the template
+Template.render(context, request)
+</pre>
+
+<pre style="color: #8099c4">
+#Remember to import the loader
+From django.template import loader
+</pre>
+
+<pre style="color: #8099c4">
+#Django shortcut for render, no longer need to import loader and HttpResponse
+Return render(request, 'polls/index.html', context)
+</pre>
+</li>
+
+<li><h4>Raise a 404 Error</h4>
+<p>If the request id doesn't exist, raise a Http404 error. A classic way is using try-catch:</p>
+
+<pre style="color: #8099c4">
+try:
+    question = Question.objects.get(pk=question_id)
+except Question.DoesNotExist:
+    raise Http404("Question does not exist")
+</pre>
+
+<p>We can also use a shortcut for this one</p>
+<pre style="color: #8099c4">
+from django.shortcuts import get_object_or_404
+question = get_object_or_404(Question, pk=question_id)
+</pre>
+</li>
+
+<li><h4>Namespacing URL names</h4>
+<p>
+	add a app_name to polls/urls.py, in case we have multiple applications with the same named path.
+</p>
+</li>
+
+
+
+</ul>
+
+
+
+
