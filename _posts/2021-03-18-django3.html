@@ -1,0 +1,110 @@
+---
+layout: post
+title: "Django Learning Note - 3"
+subtitle: ""
+date: 2021-03-18 19:31:00 
+background: '/img/posts/06.jpg'
+---
+
+
+<p>This note will cover the following things I learned about Django these two days.</p>
+<ul>
+	<li>generic views capability</li>
+	<li>OOP (Object Oriented Programming), writing classes instead of functions</li>
+	<li>GET/POST</li>
+	<li>forms related: csrf attack/defense, handle refresh after post</li>
+</ul>
+<p>The related materials come from Django documentation <a href="https://docs.djangoproject.com/en/3.0/ref/class-based-views/generic-display/">Generic display views</a> and <a href="https://docs.djangoproject.com/en/3.0/intro/tutorial04/">Part 4</a>.</p>
+
+<h4>Generic views & OOP</h4>
+<p>Generic view allows us to produce lots of similar pages without cutting, pasting and editing boiler plate. It brings quicker development, consistent user experience and few mistakes (because you will write fewer lines of code).</p>
+
+<p>Two generic class-based views: DetailView and ListView. They are commonly used in many projects.</p>
+
+<p>DetailView Method Flowchart</p>
+<pre style="color: #696969">
+setup()
+dispatch()
+http_method_not_allowed()
+get_template_names()
+----get_slug_field()
+get_queryset()
+----get_object()
+get_context_object_name()
+get_context_data()
+get()
+render_to_response()
+</pre>
+
+<p>ListView Method Flowchart</p>
+<pre style="color: #696969">
+setup()
+dispatch()
+http_method_not_allowed()
+get_template_names()
+get_queryset()
+get_context_object_name()
+get_context_data()
+get()
+render_to_response()
+</pre>
+
+<p>Example of two different ways in writing views</p>
+<p>Function in polls/views.py</p>
+<pre style="color: #8099c4">
+def index(request):
+    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+    context = {'latest_question_list': latest_question_list}
+    return render(request, 'polls/index.html', context)
+</pre>
+<p>A class extended ListView in polls/views.py</p>
+<pre style="color: #8099c4">
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
+</pre>
+
+<p>Function in polls/views.py</p>
+<pre style="color: #8099c4">
+def detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'polls/detail.html', {'question': question})
+</pre>
+
+<p>A class extended DetailView in polls/views.py</p>
+<pre style="color: #8099c4">
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
+</pre>
+
+<p>Need to change the urlpatterns in urls.py. The DetailView generic view expects the primary key value captured from the URL to be "pk" instead of question_id like previously.</p>
+
+<p>If template_name is not specified, django will autogenerate a default template name. DetailView generic views use &lt;app name&gt;/&lt;model name&gt;_detail.html. ListView works similarly.</p>
+
+<p>For ListView, if no context_object_name is provided, it will generate the name for context variable 'question_list'.</p>
+
+<h4>GET/POST</h4>
+<p>POST means you will alter data server-side. When you create a form to alter server-side data, use method="post"</p>
+
+<h4>CSRF attack/defense</h4>
+<p>A rogue site generates a page that includes form that posts data to a legitimate site where the user is logged in via a session cookie. The form is submitted to the legitimate site and the cookie is included. The legitimate site accepts the request because of the cookie value.</p>
+
+<p>To prevent this CSRF attack, the legitimate site chooses a large random number (the CSRF Token) and puts it in the session. When The legitimate site generates a POST form, it includes the CSRF Token as a hidden input field. When the form is submitted the CSRF Token is sent as well as the cookie. The site looks up the session and rejects the request if the incoming CSRF Token does not match the session's CSRF Token. Http will return Forbidden(403)</p>
+
+
+<p>Django has built in support to generate, use and check CSRF Tokens. Including the following line in your form</p>
+
+<pre style="color: #8099c4">
+&#123;&#37; csrf_token &#37;&#125;
+</pre>
+
+
+<h4>Implement POST Redirect in Django</h4>
+<p>Always return an HttpResponseRedirect after successfully dealing with POST data. This prevents data from being posted twice if a user hits the Back button.</p>
+
+
