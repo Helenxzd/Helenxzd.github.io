@@ -1,0 +1,74 @@
+---
+layout: post
+title: "Django Learning Note - 4"
+subtitle: ""
+date: 2021-03-24 19:31:00 
+background: '/img/posts/06.jpg'
+---
+
+<p>This note will cover the following:</p>
+<ul>
+<li>How cookies work in the browser and how to set and read cookies in Django</li>
+<li>How cookies are used to support sessions in Django, Django sessions</li>
+<li>Users and Authentication</li>
+</ul>
+
+<h4>Cookie</h4>
+<p>Request/response initially was stateless. When a server is interacting with many different browsers at the same time, the server needs to know which browser a particular request came from. That's why we need cookie. With cookie, the process goes like following:
+</p>
+<ol>
+<li>browser request a web page</li>
+<li>server sends page+cookie</li>
+<li>browser requests another page with cookie</li>
+</ol>
+<p><img class="img-fluid" src="/img/blogimg/cookie_session.png" alt="avatar"></p>
+<p>Browser only sends back cookies that were originally set by the same web server. Cookies have an expiration date. Some last for years, others are short term and go away as soon as the browser is closed.</p>
+<p>In hello/views.py</p>
+<pre style="color: #8099c4">
+def myview(request):
+  resp=HttpResponse("sdadda")
+  resp.set_cookie('zap', 42) # no expired date = until browser close
+  resp.set_cookie('somerandom', 42, max_age=1000) # seconds until expire
+  return resp
+</pre>
+
+<h4>Session</h4>
+<p>
+In most server application, as soon as we start a session for a new browser (unmarked) we create a session.
+We set a session cookie to be stored in the browser, which indicates the session id in use, give this browser a unique mark.
+</p>
+<p>
+The creation and destruction of sessions is handled by a Django middleware that we use in our application. The incoming request object has a request.session attribute that we can treat like a dictionary that persists from one request to the next request. As long we have the session middleware enabled in settings.py and the database table, and the browser allows cookies, we just store and read request.session in our views and pretend it is 'magic'.
+</p>
+<p>
+Session identifier : a large, random number we place in a browser cookie the first time we encounter a browser.
+Shopping cart or login information is stored in the session in the server
+</p>
+<p>
+A session is a way of marking a browser and storing data on the server which can be stored and retrieved across multiple request-response-cycles.Sessions exist irrespective of whether or not the user is logged in. <strong>When the user passes the login check, the server adds data to the session identifying the user</strong>, when the user logs out, that information in the session is removed.
+</p>
+
+<h4>Users and Authentication</h4>
+<p>Django has a built in capability to create and make use of user accounts (built-in authentication and authorization system). More advanced applications can replace the user model with their own model as long as they meet the requirements of the rest of Django with respect to the authentication and authorization system.</p>
+
+<p>Login functionality is built into Django and included in settings.py by default</p>
+<p>
+To add a path to the code that gives us login and logout urls, use reverse lookup the 'login', 'logout' view names in views.py:
+</p>
+
+<pre style="color: #8099c4">
+  resp = "Login url: "+ reverse('login')
+</pre>
+
+<p>To deal with where to go after login/logout completion, use 'next==' parameter</p>
+
+<pre style="color: #8099c4">
+&lt;p&gt;you can &lt;a href=&quot;&#123;&#37; url 'logout' &#37;&#125;?next=&#123;&#37; url 'author:open' &#37;&#125;&quot;&gt;Logout&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;you can &lt;a href=&quot;&#123;&#37; url 'login' &#37;&#125;?next=&#123;&#123; request.path &#125;&#125;&quot;&gt;Login&lt;/a&gt;&lt;/p&gt;
+</pre>
+
+<p>request.path: the URL of the currently executing request</p>
+<p>Create customized login interface / login templates, create in templates/registration/login.html, a global name</p>
+<p>Add LoginRequiredMixin to views that can only be accessed by a logged in user </p>
+
+
